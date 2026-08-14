@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dollarclick - Admin Dashboard</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #070913;
+            --card-bg: rgba(18, 24, 43, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --neon-cyan: #00f3ff;
+            --neon-green: #00ff66;
+            --neon-pink: #ff0055;
+            --neon-yellow: #ffd700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        .admin-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 18px 24px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .admin-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--neon-cyan);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Analytics Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .stat-info h3 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            font-family: monospace;
+        }
+
+        .stat-info p {
+            font-size: 0.75rem;
+            color: #8a99ad;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        /* Data Section */
+        .data-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Custom Table */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 14px;
+            color: #8a99ad;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--neon-cyan);
+        }
+
+        /* Status Badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .badge-pending { background: rgba(255, 215, 0, 0.15); color: var(--neon-yellow); border: 1px solid var(--neon-yellow); }
+        .badge-approved { background: rgba(0, 255, 102, 0.15); color: var(--neon-green); border: 1px solid var(--neon-green); }
+        .badge-rejected { background: rgba(255, 0, 85, 0.15); color: var(--neon-pink); border: 1px solid var(--neon-pink); }
+
+        /* Action Buttons */
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-approve {
+            background: var(--neon-green);
+            color: #000;
+        }
+
+        .btn-approve:hover {
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+        }
+
+        .btn-reject {
+            background: var(--neon-pink);
+            color: #fff;
+        }
+
+        .btn-reject:hover {
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <!-- Admin Header -->
+        <header class="admin-header">
+            <div class="admin-title">
+                <i class="fa-solid fa-user-shield"></i> Dollarclick Admin Panel
+            </div>
+            <div style="font-size: 0.8rem; color: #8a99ad;">
+                Status: <span style="color: var(--neon-green); font-weight: bold;">● Online</span>
+            </div>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(0, 243, 255, 0.1); color: var(--neon-cyan);">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="statTotalUsers">0</h3>
+                    <p>Total Requesters</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(255, 215, 0, 0.1); color: var(--neon-yellow);">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="statPendingCount">0</h3>
+                    <p>Pending Requests</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(0, 255, 102, 0.1); color: var(--neon-green);">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="statApprovedCount">0</h3>
+                    <p>Paid / Approved</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(255, 0, 85, 0.1); color: var(--neon-pink);">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="statRejectedCount">0</h3>
+                    <p>Rejected</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Withdrawal Requests Table -->
+        <div class="data-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fa-solid fa-list-check" style="color: var(--neon-cyan);"></i> Withdrawal Requests
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Telegram ID</th>
+                            <th>Method</th>
+                            <th>Account / Number</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="withdrawalTableBody">
+                        <tr>
+                            <td colspan="7" class="no-data">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Loading Data from Firestore...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Firestore Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase Configuration (Same as App)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzuwEw2yDe-Bwv5ZA-cgIAx67bDbHMuAI",
+            authDomain: "dollarclick-31f9b.firebaseapp.com",
+            projectId: "dollarclick-31f9b",
+            storageBucket: "dollarclick-31f9b.firebasestorage.app",
+            messagingSenderId: "305610344625",
+            appId: "1:305610344625:web:6cd9e96cddb646f128fa90"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const withdrawalsRef = collection(db, "withdrawals");
+
+        // 🔄 Realtime Listener for All Requests
+        const q = query(withdrawalsRef, orderBy("timestamp", "desc"));
+
+        onSnapshot(q, (snapshot) => {
+            const tableBody = document.getElementById('withdrawalTableBody');
+            tableBody.innerHTML = '';
+
+            let pending = 0;
+            let approved = 0;
+            let rejected = 0;
+            let uniqueUsers = new Set();
+
+            if (snapshot.empty) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="no-data">কোনো উত্তোলন রিকোয়েস্ট পাওয়া যায়নি।</td></tr>`;
+                updateStats(0, 0, 0, 0);
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const docId = docSnap.id;
+                const status = data.status || "Pending";
+
+                // Update Stats Counter
+                if (data.userId) uniqueUsers.add(data.userId);
+                if (status === "Pending") pending++;
+                else if (status === "Approved" || status === "Success") approved++;
+                else if (status === "Rejected") rejected++;
+
+                // Build Table Row
+                let badgeClass = "badge-pending";
+                if (status === "Approved" || status === "Success") badgeClass = "badge-approved";
+                if (status === "Rejected") badgeClass = "badge-rejected";
+
+                let actionButtons = '';
+                if (status === "Pending") {
+                    actionButtons = `
+                        <div class="btn-group">
+                            <button class="btn-action btn-approve" onclick="updateStatus('${docId}', 'Approved')">
+                                <i class="fa-solid fa-check"></i> Approve
+                            </button>
+                            <button class="btn-action btn-reject" onclick="updateStatus('${docId}', 'Rejected')">
+                                <i class="fa-solid fa-xmark"></i> Reject
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    actionButtons = `<span style="color: #64748b; font-size: 0.75rem;">Completed</span>`;
+                }
+
+                const row = `
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="${data.photo || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + data.username}" class="user-avatar" alt="avatar">
+                                <span>${data.username || 'User'}</span>
+                            </div>
+                        </td>
+                        <td style="font-family: monospace;">${data.userId || 'N/A'}</td>
+                        <td><strong style="color: var(--neon-cyan);">${data.method}</strong></td>
+                        <td style="font-family: monospace;">${data.account}</td>
+                        <td style="font-weight: bold; color: var(--neon-green); font-family: monospace;">$${parseFloat(data.amount).toFixed(2)}</td>
+                        <td><span class="badge ${badgeClass}">${status}</span></td>
+                        <td>${actionButtons}</td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+
+            // Update Stats UI
+            updateStats(uniqueUsers.size, pending, approved, rejected);
+        });
+
+        // 📊 Function to update Stats Cards
+        function updateStats(users, pending, approved, rejected) {
+            document.getElementById('statTotalUsers').innerText = users;
+            document.getElementById('statPendingCount').innerText = pending;
+            document.getElementById('statApprovedCount').innerText = approved;
+            document.getElementById('statRejectedCount').innerText = rejected;
+        }
+
+        // ⚡ Update Status in Firebase (Global Scope Binding)
+        window.updateStatus = async (docId, newStatus) => {
+            const confirmMsg = newStatus === 'Approved' ? 'আপনি কি পেমেন্টটি Approve করতে চান?' : 'আপনি কি রিকোয়েস্টটি Reject করতে চান?';
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const docRef = doc(db, "withdrawals", docId);
+                await updateDoc(docRef, {
+                    status: newStatus
+                });
+                alert(`✅ রিকোয়েস্টটি સફળভাবে ${newStatus} করা হয়েছে!`);
+            } catch (error) {
+                alert("❌ এরর হয়েছে: " + error.message);
+            }
+        };
+    </script>
+</body>
+</html>
