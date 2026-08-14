@@ -1314,7 +1314,15 @@
         }
 
         function getUserBalance() {
-            return parseFloat(localStorage.getItem('user_balance_' + tgUserId)) || 0.00;
+            let balanceKey = 'user_balance_' + tgUserId;
+            let storedBalance = localStorage.getItem(balanceKey);
+            
+            // যদি আগে থেকে কোনো ব্যালেন্স সেট না থাকে, তাহলে টেস্ট করার জন্য ডেমো $10.00 যোগ করা হচ্ছে
+            if (storedBalance === null) {
+                localStorage.setItem(balanceKey, '10.00');
+                return 10.00;
+            }
+            return parseFloat(storedBalance) || 0.00;
         }
 
         function updateMainBalanceUI(newAmount) {
@@ -1341,10 +1349,8 @@
 
         /* --- REFERRAL PROCESS LOGIC --- */
         function checkAndProcessReferral() {
-            // Check Telegram Start Param
             let startParam = tg && tg.initDataUnsafe ? tg.initDataUnsafe.start_param : null;
             
-            // Check URL fallback if opened via normal browser
             if(!startParam) {
                 const urlParams = new URLSearchParams(window.location.search);
                 startParam = urlParams.get('startapp');
@@ -1353,19 +1359,15 @@
             if (startParam && startParam.startsWith('ref_')) {
                 const referrerId = startParam.replace('ref_', '');
 
-                // Prevent self-referral
                 if (referrerId !== tgUserId) {
                     const alreadyProcessed = localStorage.getItem(`processed_ref_${tgUserId}`);
                     if (!alreadyProcessed) {
-                        // Mark current user as processed so referral happens only once
                         localStorage.setItem(`processed_ref_${tgUserId}`, 'true');
 
-                        // Add reward to the Referrer
                         let refBalKey = 'user_balance_' + referrerId;
                         let currentRefBal = parseFloat(localStorage.getItem(refBalKey)) || 0.00;
                         localStorage.setItem(refBalKey, (currentRefBal + REF_REWARD).toFixed(2));
 
-                        // Record in Referrer's list
                         let refListKey = 'real_referrals_list_' + referrerId;
                         let list = JSON.parse(localStorage.getItem(refListKey)) || [];
                         list.unshift({
@@ -1498,7 +1500,6 @@
                         addBalance(0.10);
                         alert('🎉 অভিনন্দন! ১০টি বিজ্ঞাপন সম্পন্ন করে $0.10 পেয়েছেন! আগামী ২৪ ঘণ্টার জন্য টাস্কটি লক হলো।');
                         
-                        // 24 Hour Lock Setup
                         adsWatched = 0;
                         localStorage.setItem('ads_watched_' + tgUserId, 0);
                         localStorage.setItem('ads_lock_until_' + tgUserId, Date.now() + LOCK_TIME_MS);
@@ -1549,7 +1550,6 @@
                     clearInterval(timer);
                     addBalance(0.02);
                     
-                    // Save 24h Lock for this task
                     localStorage.setItem(`dt_task_${taskId}_lock_${tgUserId}`, Date.now() + LOCK_TIME_MS);
                     btn.innerText = "Completed (Locked)";
                     alert("🎉 $0.02 টাকা আপনার অ্যাকাউন্টে যোগ করা হয়েছে!");
