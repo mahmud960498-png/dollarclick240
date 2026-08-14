@@ -400,22 +400,6 @@
             color: #ffffff;
         }
 
-        .completed-box {
-            width: 100%;
-            background: rgba(0, 255, 102, 0.1);
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 0.85rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
         .status-msg {
             font-size: 0.75rem;
             text-align: center;
@@ -1102,17 +1086,18 @@
                 <button class="btn-action btn-join" id="watchAdBtn" onclick="showMonetagAd()" style="background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple)); padding: 12px;">
                     <i class="fa-solid fa-play"></i> Watch Ad Now
                 </button>
+                <p id="adLockTimer" style="text-align: center; font-size: 0.75rem; color: var(--neon-pink); font-weight: 700; display: none;"></p>
             </div>
         </div>
 
-        <!-- ==================== 3. TASK PAGE (UPDATED WITH 6 TASKS) ==================== -->
+        <!-- ==================== 3. TASK PAGE ==================== -->
         <div id="page-task" class="app-page">
             <div class="generic-card" style="padding: 12px;">
                 <h3 style="color: var(--neon-cyan); font-size: 1.1rem; margin-bottom: 4px;">
                     <i class="fa-solid fa-list-check"></i> Direct Link Tasks
                 </h3>
                 <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px;">
-                    প্রতিটি লিংকে ৫ সেকেন্ড ভিজিট করুন এবং $0.02 ইনকাম করুন!
+                    প্রতিটি লিংকে ৫ সেকেন্ড ভিজিট করুন এবং $0.02 ইনকাম করুন! (২৪ ঘণ্টায় ১ বার)
                 </p>
                 <div class="direct-task-grid">
                     <!-- Task 1 -->
@@ -1129,7 +1114,7 @@
                         <div class="dt-icon" style="background: rgba(255, 0, 85, 0.15); color: var(--neon-pink);"><i class="fa-solid fa-fire"></i></div>
                         <h4>Direct Link 2</h4>
                         <p>Visit website for 5s</p>
-                        <button class="dt-btn" id="dt-btn-2" onclick="startDirectTask(2, 'https://omg10.com/4/9830101')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link</button>
+                        <button class="dt-btn" id="dt-btn-2" onclick="startDirectTask(2, 'https://your-direct-link-2.com')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link</button>
                     </div>
                     <!-- Task 3 -->
                     <div class="direct-task-card">
@@ -1137,7 +1122,7 @@
                         <div class="dt-icon" style="background: rgba(138, 43, 226, 0.15); color: var(--neon-purple);"><i class="fa-solid fa-globe"></i></div>
                         <h4>Direct Link 3</h4>
                         <p>Visit website for 5s</p>
-                        <button class="dt-btn" id="dt-btn-3" onclick="startDirectTask(3, 'https://omg10.com/4/9830101')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link</button>
+                        <button class="dt-btn" id="dt-btn-3" onclick="startDirectTask(3, 'https://your-direct-link-3.com')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link</button>
                     </div>
                     <!-- Task 4 -->
                     <div class="direct-task-card">
@@ -1145,7 +1130,7 @@
                         <div class="dt-icon" style="background: rgba(0, 255, 102, 0.15); color: var(--neon-green);"><i class="fa-solid fa-bolt"></i></div>
                         <h4>Direct Link 4</h4>
                         <p>Visit website for 5s</p>
-                        <button class="dt-btn" id="dt-btn-4" onclick="startDirectTask(4, 'https://omg10.com/4/9830101')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link</button>
+                        <button class="dt-btn" id="dt-btn-4" onclick="startDirectTask(4, 'https://your-direct-link-4.com')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link</button>
                     </div>
                     <!-- Task 5 -->
                     <div class="direct-task-card">
@@ -1153,7 +1138,7 @@
                         <div class="dt-icon" style="background: rgba(255, 215, 0, 0.15); color: var(--neon-yellow);"><i class="fa-solid fa-star"></i></div>
                         <h4>Direct Link 5</h4>
                         <p>Visit website for 5s</p>
-                        <button class="dt-btn" id="dt-btn-5" onclick="startDirectTask(5, 'https://omg10.com/4/9830101')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link</button>
+                        <button class="dt-btn" id="dt-btn-5" onclick="startDirectTask(5, 'https://your-direct-link-5.com')"><i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link</button>
                     </div>
                     <!-- Task 6 -->
                     <div class="direct-task-card">
@@ -1315,6 +1300,7 @@
         let tgUsername = "User";
         let tgPhoto = "https://api.dicebear.com/7.x/bottts/svg?seed=DollarClick";
         const REF_REWARD = 0.10;
+        const LOCK_TIME_MS = 24 * 60 * 60 * 1000; // 24 Hours in Milliseconds
 
         if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
             const user = tg.initDataUnsafe.user;
@@ -1353,7 +1339,46 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- REFERRAL SYSTEM ---
+        /* --- REFERRAL PROCESS LOGIC --- */
+        function checkAndProcessReferral() {
+            // Check Telegram Start Param
+            let startParam = tg && tg.initDataUnsafe ? tg.initDataUnsafe.start_param : null;
+            
+            // Check URL fallback if opened via normal browser
+            if(!startParam) {
+                const urlParams = new URLSearchParams(window.location.search);
+                startParam = urlParams.get('startapp');
+            }
+
+            if (startParam && startParam.startsWith('ref_')) {
+                const referrerId = startParam.replace('ref_', '');
+
+                // Prevent self-referral
+                if (referrerId !== tgUserId) {
+                    const alreadyProcessed = localStorage.getItem(`processed_ref_${tgUserId}`);
+                    if (!alreadyProcessed) {
+                        // Mark current user as processed so referral happens only once
+                        localStorage.setItem(`processed_ref_${tgUserId}`, 'true');
+
+                        // Add reward to the Referrer
+                        let refBalKey = 'user_balance_' + referrerId;
+                        let currentRefBal = parseFloat(localStorage.getItem(refBalKey)) || 0.00;
+                        localStorage.setItem(refBalKey, (currentRefBal + REF_REWARD).toFixed(2));
+
+                        // Record in Referrer's list
+                        let refListKey = 'real_referrals_list_' + referrerId;
+                        let list = JSON.parse(localStorage.getItem(refListKey)) || [];
+                        list.unshift({
+                            id: tgUserId,
+                            date: new Date().toLocaleDateString('bn-BD'),
+                            reward: `+$${REF_REWARD.toFixed(2)}`
+                        });
+                        localStorage.setItem(refListKey, JSON.stringify(list));
+                    }
+                }
+            }
+        }
+
         function initReferralSystem() {
             document.getElementById('refLinkInput').value = `https://t.me/dollarclick240_bot/app?startapp=ref_${tgUserId}`;
             loadReferralData();
@@ -1417,8 +1442,36 @@
             }
         }
 
-        // --- MONETAG ADS & DIRECT LINKS ---
+        /* --- MONETAG ADS SYSTEM (WITH 24H PERSISTENT LOCK) --- */
         let adsWatched = parseInt(localStorage.getItem('ads_watched_' + tgUserId)) || 0;
+
+        function checkAdLockState() {
+            const lockTime = parseInt(localStorage.getItem('ads_lock_until_' + tgUserId)) || 0;
+            const now = Date.now();
+            const btn = document.getElementById('watchAdBtn');
+            const timerMsg = document.getElementById('adLockTimer');
+
+            if (now < lockTime) {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+                
+                const remainingSecs = Math.ceil((lockTime - now) / 1000);
+                const hrs = Math.floor(remainingSecs / 3600);
+                const mins = Math.floor((remainingSecs % 3600) / 60);
+                
+                timerMsg.style.display = "block";
+                timerMsg.innerText = `⏳ টাস্কটি লক আছে। আবার চেষ্টা করুন ${hrs} ঘণ্টা ${mins} মিনিট পর।`;
+                return true;
+            } else {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.cursor = "pointer";
+                timerMsg.style.display = "none";
+                return false;
+            }
+        }
+
         function updateProgressUI() {
             const container = document.getElementById('adProgressContainer');
             if(!container) return;
@@ -1430,43 +1483,85 @@
                 container.appendChild(circle);
             }
             document.getElementById('adCountText').innerText = `${adsWatched} / 10`;
+            checkAdLockState();
         }
 
         function showMonetagAd() {
+            if (checkAdLockState()) return;
+
             if (typeof show_9829652 === 'function') {
                 show_9829652().then(() => {
                     adsWatched++;
                     localStorage.setItem('ads_watched_' + tgUserId, adsWatched);
+                    
                     if (adsWatched >= 10) {
                         addBalance(0.10);
-                        alert('🎉 অভিনন্দন! $0.10 আপনার ব্যালেন্সে যোগ হয়েছে!');
+                        alert('🎉 অভিনন্দন! ১০টি বিজ্ঞাপন সম্পন্ন করে $0.10 পেয়েছেন! আগামী ২৪ ঘণ্টার জন্য টাস্কটি লক হলো।');
+                        
+                        // 24 Hour Lock Setup
                         adsWatched = 0;
                         localStorage.setItem('ads_watched_' + tgUserId, 0);
+                        localStorage.setItem('ads_lock_until_' + tgUserId, Date.now() + LOCK_TIME_MS);
                     }
                     updateProgressUI();
                 });
-            } else { alert("বিজ্ঞাপন লোড হতে সমস্যা হচ্ছে!"); }
+            } else { 
+                alert("বিজ্ঞাপন লোড হতে সমস্যা হচ্ছে!"); 
+            }
+        }
+
+        /* --- DIRECT LINK TASKS SYSTEM (WITH 24H PERSISTENT LOCK PER TASK) --- */
+        function checkTaskLockStates() {
+            for (let i = 1; i <= 6; i++) {
+                const btn = document.getElementById(`dt-btn-${i}`);
+                if (!btn) continue;
+                
+                const lockUntil = parseInt(localStorage.getItem(`dt_task_${i}_lock_${tgUserId}`)) || 0;
+                const now = Date.now();
+
+                if (now < lockUntil) {
+                    btn.disabled = true;
+                    btn.innerText = "Completed (Locked)";
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Link`;
+                }
+            }
         }
 
         function startDirectTask(taskId, url) {
+            const lockUntil = parseInt(localStorage.getItem(`dt_task_${taskId}_lock_${tgUserId}`)) || 0;
+            if (Date.now() < lockUntil) {
+                alert("⚠️ এই টাস্কটি আগামী ২৪ ঘণ্টার মধ্যে আর দেখতে পাবেন না!");
+                return;
+            }
+
             window.open(url, '_blank');
             let btn = document.getElementById(`dt-btn-${taskId}`);
             let left = 5;
             btn.disabled = true;
+
             let timer = setInterval(() => {
                 left--;
-                if(left > 0) btn.innerText = `${left}s`;
-                else {
+                if(left > 0) {
+                    btn.innerText = `${left}s`;
+                } else {
                     clearInterval(timer);
                     addBalance(0.02);
-                    btn.innerText = "Completed";
+                    
+                    // Save 24h Lock for this task
+                    localStorage.setItem(`dt_task_${taskId}_lock_${tgUserId}`, Date.now() + LOCK_TIME_MS);
+                    btn.innerText = "Completed (Locked)";
+                    alert("🎉 $0.02 টাকা আপনার অ্যাকাউন্টে যোগ করা হয়েছে!");
                 }
             }, 1000);
         }
 
         document.addEventListener("DOMContentLoaded", () => {
+            checkAndProcessReferral();
             updateMainBalanceUI(getUserBalance());
             updateProgressUI();
+            checkTaskLockStates();
             initReferralSystem();
         });
     </script>
